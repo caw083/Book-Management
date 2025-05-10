@@ -1,41 +1,142 @@
 const express = require('express');
+const dotenv = require('dotenv');
+
+// Load environment variables
+dotenv.config({ path: './config.env' });
+
+// Import database connection
+const connectDB = require('./config/db');
+
+// Import models
+const Author = require('./models/author');
+const Book = require('./models/book');
+const User = require('./models/user');
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
+// Body parser middleware
+app.use(express.json());
+
+// Connect to database
+connectDB();
+
+// Basic route
 app.get('/', (req, res) => {
-  res.send('<h1>Welcome to My Express Website!</h1><p>This is served directly from JavaScript.</p>');
+  res.send('<h1>Welcome to Book Management API!</h1><p>Use /api/authors and /api/books to access data.</p>');
 });
 
-app.get('/about', (req, res) => {
-  res.send('<h2>About Page</h2><p>This website is built without any HTML files.</p>');
-});
-
-app.listen(port, () => {
-  console.log(`Website is running at http://localhost:${port}`);
-});
-
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://christopher083ade:TCjue30K0kDvEuYt@bookmanagement.76ttklh.mongodb.net/?retryWrites=true&w=majority&appName=BookManagement";
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-
-async function run() {
+// Author routes
+app.get('/api/authors', async (req, res) => {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+    const authors = await Author.find();
+    res.status(200).json({ success: true, count: authors.length, data: authors });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
   }
-}
-run().catch(console.dir);
+});
+
+app.post('/api/authors', async (req, res) => {
+  try {
+    const author = await Author.create(req.body);
+    res.status(201).json({ success: true, data: author });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Book routes
+app.get('/api/books', async (req, res) => {
+  try {
+    const books = await Book.find().populate('author');
+    res.status(200).json({ success: true, count: books.length, data: books });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/books', async (req, res) => {
+  try {
+    const book = await Book.create(req.body);
+    res.status(201).json({ success: true, data: book });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// User routes
+app.post('/api/users/register', async (req, res) => {
+  try {
+    const user = await User.create(req.body);
+    
+    // Create token
+    const token = user.getSignedJwtToken();
+    
+    res.status(201).json({ success: true, token });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/users/login', async (req, res) => {
+  const { email, password } = req.body;
+  
+  // Validate email & password
+  if (!email || !password) {
+    return res.status(400).json({ success: false, error: 'Please provide email and password' });
+  }
+  
+  try {
+    // Check for user
+    const user = await User.findOne({ email }).select('+password');
+    
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+    
+    // Check if password matches
+    const isMatch = await user.matchPassword(password);
+    
+    if (!isMatch) {
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+    
+    // Create token
+    const token = user.getSignedJwtToken();
+    
+    res.status(200).json({ success: true, token });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/authors/:id', async (req, res) => {
+    try {
+      // First check if there are any books associated with this author
+      const books = await Book.find({ author: req.params.id });
+      
+      if (books.length > 0) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Cannot delete author with associated books. Delete the books first.' 
+        });
+      }
+      
+      const author = await Author.findByIdAndDelete(req.params.id);
+      
+      if (!author) {
+        return res.status(404).json({ success: false, error: 'Author not found' });
+      }
+      
+      res.status(200).json({ success: true, data: {} });
+    } catch (err) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});

@@ -14,6 +14,7 @@ git init
 
 npm init -y
 npm install express mongoose jsonwebtoken bcryptjs dotenv
+npm install validator cors dotenv helmet morgan
 npm install --save-dev jest supertest nodemon
 
 git add .
