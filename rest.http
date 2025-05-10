@@ -2,3 +2,35 @@ GET http://localhost:3000/
 
 ###
 GET http://localhost:3000/
+####
+POST http://localhost:3000/api/authors
+Content-Type: application/json
+
+{
+  "name": "J.K. Rowling",
+  "biography": "British author best known for the Harry Potter series",
+  "nationality": "British"
+}
+
+####
+GET http://localhost:3000/api/authors
+####
+POST http://localhost:3000/api/books
+Content-Type: application/json
+
+{
+  "title": "Harry Potter and the Philosopher's Stone",
+  "description": "The first book in the Harry Potter series",
+  "isbn": "9780747532743",
+  "author": "681ebea9adbc9ccc65f958be",
+  "publishedDate": "1997-06-26"
+}
+####
+DELETE http://localhost:3000/api/authors/681ebecfadbc9ccc65f958c1
+
+####
+DELETE http://localhost:3000/api/authors/681ebed0adbc9ccc65f958c3
+
+####
+GET http://localhost:3000/api/books
+
