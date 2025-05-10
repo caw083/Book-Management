@@ -1,0 +1,65 @@
+### Variables
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Register a new user
+POST {{baseUrl}}/users/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Login with registered user
+POST {{baseUrl}}/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Get current user (will return placeholder message until auth is implemented)
+# First login to get a token, then copy the token here
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwYTFjMmIzZTRkNWY2YTdiOGM5ZDBlMSIsImlhdCI6MTYyMDM0NTkzOSwiZXhwIjoxNjIyOTM3OTM5fQ.example_token
+
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+### Register with invalid data (missing email)
+POST {{baseUrl}}/users/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Invalid User",
+  "password": "password123"
+}
+
+### Register with invalid data (missing password)
+POST {{baseUrl}}/users/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Invalid User",
+  "email": "invalid@example.com"
+}
+
+### Login with invalid credentials
+POST {{baseUrl}}/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "nonexistent@example.com",
+  "password": "wrongpassword"
+}
+
+### Login with wrong password
+POST {{baseUrl}}/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "wrongpassword"
+}
