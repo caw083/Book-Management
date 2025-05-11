@@ -22,9 +22,9 @@ process.on('unhandledRejection', (err, promise) => {
 });
 
 // Start server
-const server = app.listen(port, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
-});
+const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
+  });
 
 // Handle unhandled exceptions
 process.on('uncaughtException', (err) => {
