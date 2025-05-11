@@ -52,5 +52,6 @@ Content-Type: application/json
   "biography": "George Orwell adalah nama pena dari Eric Arthur Blair, penulis dan jurnalis Inggris yang terkenal dengan karya bertema politik seperti 1984 dan Animal Farm.",
   "nationality": "United Kingdom"
 }
-####3
+
+####
 DELETE http://localhost:3000/api/authors/681f102cc386b2e04eb80b79

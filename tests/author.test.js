@@ -17,25 +17,28 @@ app.put('/api/authors/:id', authorController.updateAuthor);
 app.delete('/api/authors/:id', authorController.deleteAuthor);
 app.get('/api/authors/:id/books', authorController.getAuthorBooks);
 
-// Mock data
+// Create a string ID that we'll use consistently
+const mockId = new mongoose.Types.ObjectId().toString();
+
+// Mock data with string ID and date string
 const mockAuthor = {
-  _id: new mongoose.Types.ObjectId(),
+  _id: mockId,
   name: 'Test Author',
   biography: 'Test Biography',
   nationality: 'Test Nationality',
-  createdAt: new Date()
+  createdAt: new Date().toISOString()
 };
 
 const mockBooks = [
   {
-    _id: new mongoose.Types.ObjectId(),
+    _id: new mongoose.Types.ObjectId().toString(),
     title: 'Test Book 1',
-    author: mockAuthor._id
+    author: mockId
   },
   {
-    _id: new mongoose.Types.ObjectId(),
+    _id: new mongoose.Types.ObjectId().toString(),
     title: 'Test Book 2',
-    author: mockAuthor._id
+    author: mockId
   }
 ];
 
@@ -103,7 +106,7 @@ describe('Author Controller Tests', () => {
     it('should get single author', async () => {
       Author.findById.mockResolvedValue(mockAuthor);
 
-      const res = await request(app).get(`/api/authors/${mockAuthor._id}`);
+      const res = await request(app).get(`/api/authors/${mockId}`);
       
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
@@ -113,7 +116,7 @@ describe('Author Controller Tests', () => {
     it('should return 404 if author not found', async () => {
       Author.findById.mockResolvedValue(null);
 
-      const res = await request(app).get(`/api/authors/${mockAuthor._id}`);
+      const res = await request(app).get(`/api/authors/${mockId}`);
       
       expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
@@ -189,7 +192,7 @@ describe('Author Controller Tests', () => {
       Author.findByIdAndUpdate.mockResolvedValue(updatedAuthor);
 
       const res = await request(app)
-        .put(`/api/authors/${mockAuthor._id}`)
+        .put(`/api/authors/${mockId}`)
         .send({ name: 'Updated Name' });
       
       expect(res.statusCode).toBe(200);
@@ -201,7 +204,7 @@ describe('Author Controller Tests', () => {
       Author.findByIdAndUpdate.mockResolvedValue(null);
 
       const res = await request(app)
-        .put(`/api/authors/${mockAuthor._id}`)
+        .put(`/api/authors/${mockId}`)
         .send({ name: 'Updated Name' });
       
       expect(res.statusCode).toBe(404);
@@ -229,7 +232,7 @@ describe('Author Controller Tests', () => {
       Book.find.mockResolvedValue([]);
       Author.findByIdAndDelete.mockResolvedValue(mockAuthor);
 
-      const res = await request(app).delete(`/api/authors/${mockAuthor._id}`);
+      const res = await request(app).delete(`/api/authors/${mockId}`);
       
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
@@ -238,7 +241,7 @@ describe('Author Controller Tests', () => {
     it('should not delete author with associated books', async () => {
       Book.find.mockResolvedValue(mockBooks);
 
-      const res = await request(app).delete(`/api/authors/${mockAuthor._id}`);
+      const res = await request(app).delete(`/api/authors/${mockId}`);
       
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
@@ -249,7 +252,7 @@ describe('Author Controller Tests', () => {
       Book.find.mockResolvedValue([]);
       Author.findByIdAndDelete.mockResolvedValue(null);
 
-      const res = await request(app).delete(`/api/authors/${mockAuthor._id}`);
+      const res = await request(app).delete(`/api/authors/${mockId}`);
       
       expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
@@ -262,7 +265,7 @@ describe('Author Controller Tests', () => {
       Author.findById.mockResolvedValue(mockAuthor);
       Book.find.mockResolvedValue(mockBooks);
 
-      const res = await request(app).get(`/api/authors/${mockAuthor._id}/books`);
+      const res = await request(app).get(`/api/authors/${mockId}/books`);
       
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
@@ -277,7 +280,7 @@ describe('Author Controller Tests', () => {
     it('should return 404 if author not found for books', async () => {
       Author.findById.mockResolvedValue(null);
 
-      const res = await request(app).get(`/api/authors/${mockAuthor._id}/books`);
+      const res = await request(app).get(`/api/authors/${mockId}/books`);
       
       expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);

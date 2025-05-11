@@ -1,12 +1,14 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const dotenv = require('dotenv');
 const app = require('../app');
 const Book = require('../models/book');
 const Author = require('../models/author');
 const User = require('../models/user');
 
-let mongoServer;
+// Load env vars
+dotenv.config({ path: './config/config.env' });
+
 let token;
 let authorId;
 let bookId;
@@ -32,11 +34,24 @@ const testBook = {
 
 // Setup and teardown
 beforeAll(async () => {
-  // Start in-memory MongoDB server
-  mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
+  // Use test database connection string if provided, else use regular connection
+  const MONGO_TEST_URI = process.env.MONGO_TEST_URI || process.env.MONGO_URI;
+  
+  try {
+    await mongoose.connect(MONGO_TEST_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log('Test database connected');
+  } catch (err) {
+    console.error(`Error connecting to test database: ${err.message}`);
+    process.exit(1);
+  }
 
-  await mongoose.connect(mongoUri);
+  // Clear any existing test data
+  await User.deleteMany({});
+  await Author.deleteMany({});
+  await Book.deleteMany({});
 
   // Register a test user and get the token
   const registerResponse = await request(app)
@@ -64,11 +79,11 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.disconnect();
-  await mongoServer.stop();
+  console.log('Test database connection closed');
 });
 
-// Clear test data between tests
-afterEach(async () => {
+// Clear books between tests
+beforeEach(async () => {
   await Book.deleteMany({});
 });
 

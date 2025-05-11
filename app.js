@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
 
-// const errorHandler = require('./middlewares/errorHandler');
+const errorHandler = require('./middlewares/errorHandler');
 
 // Load environment variables
 dotenv.config({ path: './config.env' });
@@ -32,7 +32,12 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Error handler middleware (should be last)
-// app.use(errorHandler);
+// Not found middleware
+app.use((req, res, next) => {
+  const error = new Error(`Not found - ${req.originalUrl}`);
+  error.statusCode = 404;
+  next(error);
+});
 
-module.exports = app;
+// Error handler middleware (should be last)
+app.use(errorHandler);
