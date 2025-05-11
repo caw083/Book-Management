@@ -1,0 +1,40 @@
+
+POST http://localhost:3000/api/authors
+Content-Type: application/json
+
+{
+  "name": "J.K. Rowling",
+  "biography": "British author best known for the Harry Potter series",
+  "nationality": "British"
+}
+
+####
+GET http://localhost:3000/api/authors
+
+### Get all authors with pagination
+GET http://localhost:3000/api/authors?page=1&limit=10
+
+### Get all authors sorted by name
+GET http://localhost:3000/api/authors?sort=name
+
+### Get all authors with field selection
+GET http://localhost:3000/api/authors?select=name,bio
+
+### Get single author by ID (replace ID with an actual author ID)
+GET http://localhost:3000/api/authors/authorId
+
+### Update an author (replace ID with an actual author ID)
+PUT http://localhost:3000/api/authors/681f102dc386b2e04eb80b7b
+Content-Type: application/json
+
+{
+  "name": "J.K. Rowling",
+  "bio": "British author best known for the Harry Potter series and Fantastic Beasts",
+  "nationality": "British"
+}
+
+### Delete an author (replace ID with an actual author ID)
+DELETE http://localhost:3000/api/authors/681f102dc386b2e04eb80b7b
+
+### Get all books by a specific author (replace ID with an actual author ID)
+GET http://localhost:3000/api/authors/681ebea9adbc9ccc65f958be/books

@@ -1,0 +1,56 @@
+####
+GET http://localhost:3000/api/authors
+
+
+### Add Other Authors
+POST http://localhost:3000/api/authors
+Content-Type: application/json
+
+{
+  "name": "Andrea Hirata",
+  "biography": "Andrea Hirata adalah penulis terkenal asal Indonesia yang dikenal lewat novel debutnya, Laskar Pelangi, yang terinspirasi dari masa kecilnya di Belitung.",
+  "nationality": "Indonesia"
+}
+
+### 
+POST http://localhost:3000/api/authors
+Content-Type: application/json
+
+{
+  "name": "Tere Liye",
+  "biography": "Tere Liye adalah nama pena dari penulis produktif Indonesia yang telah menulis banyak novel bertema cinta, kehidupan, dan spiritualitas.",
+  "nationality": "Indonesia"
+}
+
+####
+POST http://localhost:3000/api/authors
+Content-Type: application/json
+
+{
+  "name": "J.K. Rowling",
+  "biography": "British author best known for the Harry Potter series.",
+  "nationality": "United Kingdom"
+}
+
+
+###
+POST http://localhost:3000/api/authors
+Content-Type: application/json
+
+{
+  "name": "George Orwell",
+  "biography": "George Orwell adalah nama pena dari Eric Arthur Blair, penulis dan jurnalis Inggris yang terkenal dengan karya bertema politik seperti 1984 dan Animal Farm.",
+  "nationality": "United Kingdom"
+}
+
+###
+POST http://localhost:3000/api/authors
+Content-Type: application/json
+
+{
+  "name": "George Orwell",
+  "biography": "George Orwell adalah nama pena dari Eric Arthur Blair, penulis dan jurnalis Inggris yang terkenal dengan karya bertema politik seperti 1984 dan Animal Farm.",
+  "nationality": "United Kingdom"
+}
+####3
+DELETE http://localhost:3000/api/authors/681f102cc386b2e04eb80b79

@@ -23,8 +23,7 @@ Content-Type: {{contentType}}
 
 ### Get current user (will return placeholder message until auth is implemented)
 # First login to get a token, then copy the token here
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwYTFjMmIzZTRkNWY2YTdiOGM5ZDBlMSIsImlhdCI6MTYyMDM0NTkzOSwiZXhwIjoxNjIyOTM3OTM5fQ.example_token
-
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MWYxMTNiYzM4NmIyZTA0ZWI4MGI4ZSIsImlhdCI6MTc0Njg2NjU1NSwiZXhwIjoxNzQ5NDU4NTU1fQ.9YVGTi6rmsYqAtIiRBhwj55tlidnm0eqoR2xjqVxnJc
 GET {{baseUrl}}/users/me
 Authorization: Bearer {{authToken}}
 

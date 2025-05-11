@@ -154,13 +154,26 @@ exports.getAuthor = async (req, res) => {
 // @route   POST /api/authors
 // @access  Private
 exports.createAuthor = async (req, res) => {
-  try {
-    const author = await Author.create(req.body);
-    res.status(201).json({ success: true, data: author });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-};
+    try {
+      // Check if an author with the same name already exists
+      // Using case-insensitive search for better validation
+      const existingAuthor = await Author.findOne({
+        name: { $regex: new RegExp(`^${req.body.name}$`, 'i') }
+      });
+      
+      if (existingAuthor) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Author with this name already exists' 
+        });
+      }
+      
+      const author = await Author.create(req.body);
+      res.status(201).json({ success: true, data: author });
+    } catch (err) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  };
 
 // @desc    Update author
 // @route   PUT /api/authors/:id
