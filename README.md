@@ -1,6 +1,6 @@
 # Bookstore API
 
-A RESTful API for managing books and authors using Node.js, Express, and MongoDB.
+A RESTful API for managing books and authors using Node.js, Express, MongoDB Atlas, and Docker.
 
 ## Table of Contents
 
@@ -10,9 +10,14 @@ A RESTful API for managing books and authors using Node.js, Express, and MongoDB
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Configuration](#configuration)
+- [Running with Docker](#running-with-docker)
+  - [Prerequisites for Docker](#prerequisites-for-docker)
+  - [Running in Development Mode](#running-in-development-mode)
+  - [Running in Production Mode](#running-in-production-mode)
 - [API Documentation](#api-documentation)
   - [Author Endpoints](#author-endpoints)
   - [Book Endpoints](#book-endpoints)
+  - [Authentication Endpoints](#authentication-endpoints)
 - [Query Parameters](#query-parameters)
 - [Testing](#testing)
 - [Error Handling](#error-handling)
@@ -22,33 +27,44 @@ A RESTful API for managing books and authors using Node.js, Express, and MongoDB
 ## Features
 
 - CRUD operations for books and authors
+- User authentication and authorization
 - Advanced filtering, sorting, and pagination
 - Relationship handling between books and authors
 - Comprehensive error handling
 - MVC architecture
 - RESTful API design
-- MongoDB integration
+- MongoDB Atlas integration
+- Docker support for easy deployment
 
 ## Project Structure
 
 ```
 bookstore-api/
 ├── config/              # Configuration files
+│   └── db.js            # Database connection
 ├── controllers/         # API controllers
+│   ├── authController.js
 │   ├── authorController.js
 │   └── bookController.js
 ├── models/              # Database models
 │   ├── author.js
-│   └── book.js
+│   ├── book.js
+│   └── user.js
+├── middlewares/         # Custom middleware
+│   ├── auth.js          # Authentication middleware
+│   └── errorHandler.js  # Error handling middleware
 ├── routes/              # API routes
+│   ├── authRoutes.js
 │   ├── authorRoutes.js
 │   └── bookRoutes.js
-├── middleware/          # Custom middleware
-├── utils/               # Utility functions
 ├── tests/               # Test files
-├── .env                 # Environment variables
+├── .dockerignore        # Docker ignore file
+├── .env                 # Environment variables (gitignored)
 ├── .gitignore           # Git ignore file
-├── api-tests.rest       # REST client test file
+├── app.js               # Express app setup
+├── Dockerfile           # Docker configuration
+├── docker-compose.yml   # Docker Compose for development
+├── docker-compose.prod.yml # Docker Compose for production
 ├── package.json         # Dependencies and scripts
 ├── server.js            # Entry point
 └── README.md            # Project documentation
@@ -59,8 +75,9 @@ bookstore-api/
 ### Prerequisites
 
 - Node.js (v14.x or later)
-- MongoDB (local or Atlas)
 - npm or yarn
+- MongoDB Atlas account (or local MongoDB)
+- Docker and Docker Compose (optional, for containerized deployment)
 
 ### Installation
 
@@ -75,12 +92,15 @@ bookstore-api/
    npm install
    ```
 
-3. Create a `.env` file in the root directory with the following variables:
+3. Create a `config.env` file in the root directory with the following variables:
    ```
    PORT=3000
-   MONGO_URI=mongodb://localhost:27017/bookstore
-   NODE_ENV=development
+   MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
+   JWT_SECRET=your_jwt_secret_here
+   JWT_EXPIRE=30d
    ```
+
+   Replace `<username>`, `<password>`, `<cluster>`, and `<database>` with your MongoDB Atlas credentials.
 
 4. Start the server:
    ```bash
@@ -94,7 +114,61 @@ bookstore-api/
 
 ### Configuration
 
-The application uses environment variables for configuration. See the `.env` example above for required variables.
+The application uses environment variables for configuration. See the `config.env` example above for required variables.
+
+## Running with Docker
+
+### Prerequisites for Docker
+
+- Docker Desktop installed on your machine
+- Docker Compose installed (included with Docker Desktop)
+
+### Running in Development Mode
+
+1. Make sure you have the following files in your project root:
+   - `Dockerfile`
+   - `.dockerignore`
+   - `docker-compose.yml`
+
+2. Run the application in development mode:
+   ```bash
+   docker-compose up
+   ```
+
+   This will:
+   - Build the Docker image for the application
+   - Start the containers for the app and MongoDB
+   - Mount your local code to the container for hot-reloading
+   - Expose the API on port 3000
+
+3. To run in background mode:
+   ```bash
+   docker-compose up -d
+   ```
+
+4. To stop the containers:
+   ```bash
+   docker-compose down
+   ```
+
+### Running in Production Mode
+
+1. Create a `.env` file with production values:
+   ```
+   JWT_SECRET=your_secure_jwt_secret
+   MONGO_USERNAME=admin
+   MONGO_PASSWORD=secure_password
+   ```
+
+2. Run with production configuration:
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+3. To stop the production containers:
+   ```bash
+   docker-compose -f docker-compose.prod.yml down
+   ```
 
 ## API Documentation
 
@@ -121,6 +195,14 @@ The application uses environment variables for configuration. See the `.env` exa
 | PUT    | /api/books/:id      | Update a book                    | Private   |
 | DELETE | /api/books/:id      | Delete a book                    | Private   |
 
+### Authentication Endpoints
+
+| Method | Endpoint            | Description                      | Access    |
+|--------|---------------------|----------------------------------|-----------|
+| POST   | /api/auth/register  | Register a new user              | Public    |
+| POST   | /api/auth/login     | Login a user                     | Public    |
+| GET    | /api/auth/me        | Get current user                 | Private   |
+
 ## Query Parameters
 
 The API supports various query parameters for filtering, sorting, and pagination:
@@ -137,13 +219,13 @@ Example: `/api/books?page=2&limit=20`
 - `sort`: Specify fields to sort by (comma-separated)
   - Prefix with `-` for descending order
 
-Example: `/api/books?sort=-publicationYear,title`
+Example: `/api/books?sort=-publishedDate,title`
 
 ### Field Selection
 
 - `select`: Specify fields to include (comma-separated)
 
-Example: `/api/books?select=title,author,price`
+Example: `/api/books?select=title,author,description`
 
 ### Filtering
 
@@ -151,18 +233,17 @@ Example: `/api/books?select=title,author,price`
 - Use MongoDB operators (`gt`, `gte`, `lt`, `lte`, `in`) by appending them in square brackets
 
 Examples:
-- `/api/books?genre=Fantasy`
-- `/api/books?publicationYear[gt]=2000`
-- `/api/books?price[lte]=20`
+- `/api/books?title=Harry%20Potter`
+- `/api/books?publishedDate[gt]=2000-01-01`
+- `/api/books?isbn=1234567890`
 
 ## Testing
 
-The project includes a REST client file (`api-tests.rest`) that can be used with VS Code's REST Client extension to test the API endpoints.
-
-To run tests:
-1. Install the REST Client extension in VS Code
-2. Open the `api-tests.rest` file
-3. Click the "Send Request" link above each request to execute it
+To test the API endpoints, you can use tools like:
+- Postman
+- Insomnia
+- cURL
+- VS Code's REST Client extension with a .rest file
 
 ## Error Handling
 
@@ -177,6 +258,8 @@ The API provides detailed error responses in the following format:
 
 Common error codes:
 - `400` - Bad request (validation errors, malformed requests)
+- `401` - Unauthorized (authentication required)
+- `403` - Forbidden (insufficient permissions)
 - `404` - Resource not found
 - `500` - Server error
 

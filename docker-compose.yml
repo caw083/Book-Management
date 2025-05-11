@@ -1,0 +1,18 @@
+version: '3'
+services:
+  book-api:
+    build: .
+    container_name: book-management-api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Use the MongoDB Atlas connection string from config.env
+      - MONGO_URI=mongodb+srv://christopher083ade:TCjue30K0kDvEuYt@bookmanagement.76ttklh.mongodb.net/BookManagement?retryWrites=true&w=majority
+      - JWT_SECRET=your_jwt_secret_here
+      - JWT_EXPIRE=30d
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
