@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookstore API</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #2ec4b6;
+            --warning: #ff9f1c;
+            --danger: #e71d36;
+            --gray: #adb5bd;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, var(--accent), transparent 70%),
+                        radial-gradient(circle at bottom left, var(--secondary), transparent 70%),
+                        linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: var(--dark);
+            overflow-x: hidden;
+            perspective: 1000px;
+        }
+        
+        .header-container {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                0 3px 10px rgba(0, 0, 0, 0.05),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+            padding: 4rem 3rem;
+            text-align: center;
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform: rotateX(5deg);
+            position: relative;
+        }
+        
+        .header-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background-size: 200% 200%;
+            animation: shimmer 3s infinite linear;
+            z-index: -1;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 200%; }
+        }
+        
+        .header-container:hover {
+            transform: rotateX(0) translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 10px 15px rgba(0, 0, 0, 0.07),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo::before {
+            content: '📚';
+            font-size: 2.5rem;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+        }
+        
+        .logo::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            20%, 100% { transform: translateX(100%); }
+        }
+        
+        h1 {
+            color: var(--dark);
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            position: relative;
+            display: inline-block;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            width: 30%;
+            height: 6px;
+            bottom: -15px;
+            left: 35%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 5px rgba(67, 97, 238, 0.3);
+        }
+        
+        .header-container:hover h1::after {
+            width: 80%;
+            left: 10%;
+            height: 8px;
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.5);
+        }
+        
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.4rem;
+            margin-top: 2rem;
+            font-weight: 400;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+        
+        .header-container:hover .subtitle {
+            transform: translateY(5px);
+            opacity: 1;
+        }
+        
+        .tech-stack {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+        
+        .tech-badge {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--dark);
+            padding: 0.7rem 1.3rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 3px 8px rgba(0, 0, 0, 0.05),
+                0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tech-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, 
+                rgba(255, 255, 255, 0.1), 
+                rgba(255, 255, 255, 0.2), 
+                rgba(255, 255, 255, 0.1));
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .tech-badge:hover {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 
+                0 8px 15px rgba(67, 97, 238, 0.25),
+                0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tech-badge:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        
+        .decoration {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.6;
+            z-index: -1;
+        }
+        
+        .deco-1 {
+            top: -70px;
+            right: -70px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(var(--accent), transparent 70%);
+            filter: blur(20px);
+        }
+        
+        .deco-2 {
+            bottom: -100px;
+            left: -100px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(var(--secondary), transparent 70%);
+            filter: blur(30px);
+        }
+        
+        .deco-3 {
+            bottom: 20%;
+            right: -30px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(var(--success), transparent 70%);
+            filter: blur(15px);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .header-container {
+                padding: 3rem 2rem;
+            }
+            
+            .tech-badge {
+                font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .header-container {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <div class="decoration deco-1"></div>
+        <div class="decoration deco-2"></div>
+        <div class="decoration deco-3"></div>
+        
+        <div class="logo"></div>
+        <h1>Bookstore API</h1>
+        <p class="subtitle">A RESTful API for managing books and authors using Node.js, Express, MongoDB Atlas, and Docker.</p>
+        
+        <div class="tech-stack">
+            <div class="tech-badge"><span class="icon">⚙️</span> Node.js</div>
+            <div class="tech-badge"><span class="icon">🚀</span> Express</div>
+            <div class="tech-badge"><span class="icon">🗄️</span> MongoDB</div>
+            <div class="tech-badge"><span class="icon">🐳</span> Docker</div>
+            <div class="tech-badge"><span class="icon">🔄</span> RESTful</div>
+        </div>
+    </div>
+</body>
+</html>

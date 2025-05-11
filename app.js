@@ -1,6 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
+
 // const errorHandler = require('./middlewares/errorHandler');
 
 // Load environment variables
@@ -27,7 +29,7 @@ app.use('/api/auth', authRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
-  res.send('<h1>Welcome to Book Management API!</h1><p>Use /api/authors and /api/books to access data.</p>');
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Error handler middleware (should be last)
