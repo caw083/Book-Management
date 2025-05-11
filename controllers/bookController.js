@@ -1,70 +1,31 @@
 const Book = require('../models/book');
+const Author = require('../models/author');
 
 // @desc    Get all books
 // @route   GET /api/books
 // @access  Public
 exports.getBooks = async (req, res) => {
   try {
-    // Add optional filtering and sorting capabilities
-    let query;
-    
-    // Copy req.query
-    const reqQuery = { ...req.query };
-    
-    // Fields to exclude
-    const removeFields = ['select', 'sort', 'page', 'limit'];
-    
-    // Loop over removeFields and delete them from reqQuery
-    removeFields.forEach(param => delete reqQuery[param]);
-    
-    // Create query string
-    let queryStr = JSON.stringify(reqQuery);
-    
-    // Create operators ($gt, $gte, etc)
-    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `${match}`);
-    
-    // Finding resource
-    query = Book.find(JSON.parse(queryStr));
-    
-    // Select Fields
-    if (req.query.select) {
-      const fields = req.query.select.split(',').join(' ');
-      query = query.select(fields);
-    }
-    
-    // Sort
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort('-createdAt');
-    }
-    
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const total = await Book.countDocuments(JSON.parse(queryStr));
     
-    query = query.skip(startIndex).limit(limit);
-    
-    // Populate author fields
-    query = query.populate('author');
-    
-    // Execute query
-    const books = await query;
-    
-    // Pagination result
+    // Create pagination object
     const pagination = {};
     
-    if (endIndex < total) {
+    // Get total count of books
+    const total = await Book.countDocuments();
+    
+    // Add next page if applicable
+    if (startIndex + limit < total) {
       pagination.next = {
         page: page + 1,
         limit
       };
     }
     
+    // Add previous page if applicable
     if (startIndex > 0) {
       pagination.prev = {
         page: page - 1,
@@ -72,14 +33,25 @@ exports.getBooks = async (req, res) => {
       };
     }
     
-    res.status(200).json({ 
-      success: true, 
+    // Get books with pagination
+    const books = await Book.find()
+      .populate('author', 'name biography nationality')
+      .select('-__v')
+      .sort({ createdAt: -1 })
+      .skip(startIndex)
+      .limit(limit);
+    
+    res.status(200).json({
+      success: true,
       count: books.length,
       pagination,
-      data: books 
+      data: books
     });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(400).json({
+      success: false,
+      error: err.message
+    });
   }
 };
 
@@ -88,31 +60,32 @@ exports.getBooks = async (req, res) => {
 // @access  Public
 exports.getBook = async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id).populate({
-      path: 'author',
-      select: 'name bio' // Select only specific fields from author if needed
-    });
+    const book = await Book.findById(req.params.id).populate('author');
     
     if (!book) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Book not found with id: ' + req.params.id 
+      return res.status(404).json({
+        success: false,
+        error: 'Book not found with the provided ID'
       });
     }
     
-    res.status(200).json({ 
-      success: true, 
-      data: book 
+    res.status(200).json({
+      success: true,
+      data: book
     });
   } catch (err) {
-    // Handle case for invalid ObjectId format
+    // Handle CastError for invalid ObjectId format
     if (err.name === 'CastError') {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Invalid book ID format' 
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid book ID format'
       });
     }
-    res.status(400).json({ success: false, error: err.message });
+    
+    res.status(400).json({
+      success: false,
+      error: err.message
+    });
   }
 };
 
@@ -121,10 +94,44 @@ exports.getBook = async (req, res) => {
 // @access  Private
 exports.createBook = async (req, res) => {
   try {
+    // First check if the author exists
+    const author = await Author.findById(req.body.author);
+    if (!author) {
+      return res.status(404).json({
+        success: false,
+        error: 'Author not found with the provided ID'
+      });
+    }
+    
+    // Then check for duplicate ISBN
+    const existingBook = await Book.findOne({ isbn: req.body.isbn });
+    if (existingBook) {
+      return res.status(400).json({
+        success: false,
+        error: 'Book with this ISBN already exists'
+      });
+    }
+    
+    // Create the book if all validations pass
     const book = await Book.create(req.body);
-    res.status(201).json({ success: true, data: book });
+    
+    res.status(201).json({
+      success: true,
+      data: book
+    });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed: ' + err.message
+      });
+    }
+    
+    res.status(400).json({
+      success: false,
+      error: err.message
+    });
   }
 };
 
@@ -133,18 +140,60 @@ exports.createBook = async (req, res) => {
 // @access  Private
 exports.updateBook = async (req, res) => {
   try {
-    const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
+    // First check if book exists
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        error: 'Book not found with the provided ID'
+      });
+    }
+    
+    // If author is being updated, check if new author exists
+    if (req.body.author) {
+      const author = await Author.findById(req.body.author);
+      if (!author) {
+        return res.status(404).json({
+          success: false,
+          error: 'Author not found with the provided ID'
+        });
+      }
+    }
+    
+    // If ISBN is being updated, check for duplicates
+    if (req.body.isbn && req.body.isbn !== book.isbn) {
+      const existingBook = await Book.findOne({ isbn: req.body.isbn });
+      if (existingBook && existingBook._id.toString() !== req.params.id) {
+        return res.status(400).json({
+          success: false,
+          error: 'Book with this ISBN already exists'
+        });
+      }
+    }
+    
+    // Update the book if all validations pass
+    const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
     }).populate('author');
     
-    if (!book) {
-      return res.status(404).json({ success: false, error: 'Book not found' });
+    res.status(200).json({
+      success: true,
+      data: updatedBook
+    });
+  } catch (err) {
+    // Handle CastError for invalid ObjectId format
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid book ID format'
+      });
     }
     
-    res.status(200).json({ success: true, data: book });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(400).json({
+      success: false,
+      error: err.message
+    });
   }
 };
 
@@ -156,11 +205,27 @@ exports.deleteBook = async (req, res) => {
     const book = await Book.findByIdAndDelete(req.params.id);
     
     if (!book) {
-      return res.status(404).json({ success: false, error: 'Book not found' });
+      return res.status(404).json({
+        success: false,
+        error: 'Book not found with the provided ID'
+      });
     }
     
-    res.status(200).json({ success: true, data: {} });
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid ID'
+      });
+    }
+    
+    res.status(400).json({
+      success: false,
+      error: err.message
+    });
   }
 };
