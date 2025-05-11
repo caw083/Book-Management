@@ -34,3 +34,5 @@ DELETE http://localhost:3000/api/authors/681ebed0adbc9ccc65f958c3
 ####
 GET http://localhost:3000/api/books
 
+###
+GET http://localhost:3000/api/books

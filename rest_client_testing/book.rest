@@ -1,0 +1,46 @@
+####
+GET http://localhost:3000/api/books
+
+####
+POST http://localhost:3000/api/books
+Content-Type: application/json
+
+{
+  "title": "Harry Potter and the Philosopher's Stone",
+  "description": "The first book in the Harry Potter series",
+  "isbn": "9780747532743",
+  "author": "681ebea9adbc9ccc65f958be",
+  "publishedDate": "1997-06-26"
+}
+
+####
+POST http://localhost:3000/api/books
+Content-Type: application/json
+
+{
+  "title": "Harry Potter and the Chamber of Secrets",
+  "description": "The second book in the Harry Potter series",
+  "isbn": "9780747538486",
+  "author": "681ebea9adbc9ccc65f958be",
+  "publishedDate": "1998-07-02"
+}
+
+###
+GET http://localhost:3000/api/books/681ee4e267068d8d5ca319ce
+
+###
+
+PUT http://localhost:3000/api/books/681ee4e267068d8d5ca319ce
+Content-Type: application/json
+
+{
+  "title": "Harry Potter and the Philosopher's Stone (Updated Edition)",
+  "description": "Updated version with new cover",
+  "isbn": "97807475327473",
+  "author": "681ebea9adbc9ccc65f958be",
+  "publishedDate": "1997-06-26"
+}
+
+#####
+
+DELETE http://localhost:3000/api/books/681ee4e267068d8d5ca319ce

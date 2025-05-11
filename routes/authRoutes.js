@@ -5,6 +5,7 @@ const {
   login, 
   getMe
 } = require('../controllers/authController');
+
 const { protect } = require('../middlewares/auth');
 
 // Routes
