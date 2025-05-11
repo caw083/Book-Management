@@ -1,15 +1,25 @@
 // const request = require('supertest');
 // const mongoose = require('mongoose');
 // const dotenv = require('dotenv');
-// const app = require('../server'); // Adjust path as needed to your Express app entry point
+// const app = require('../app');
 // const User = require('../models/user');
+// const http = require('http');
 
 // // Load env vars
 // dotenv.config({ path: './config/config.env' });
 
-// // Setup test database connection
+// let server;
+
+// // Test user data
+// const testUser = {
+//   name: 'Auth Test User',
+//   email: 'authtest@example.com',
+//   password: 'password123'
+// };
+
+// // Setup and teardown
 // beforeAll(async () => {
-//   // Use test database connection string if provided, else use memory server
+//   // Use test database connection string if provided, else use regular connection
 //   const MONGO_TEST_URI = process.env.MONGO_TEST_URI || process.env.MONGO_URI;
   
 //   try {
@@ -17,155 +27,153 @@
 //       useNewUrlParser: true,
 //       useUnifiedTopology: true
 //     });
-//     console.log('Test database connected');
 //   } catch (err) {
 //     console.error(`Error connecting to test database: ${err.message}`);
 //     process.exit(1);
 //   }
-// });
 
-// afterAll(async () => {
-//   await mongoose.disconnect();
-//   console.log('Test database connection closed');
-// });
+//   // Create a server instance for testing with supertest
+//   server = http.createServer(app);
+//   server.listen();
 
-// beforeEach(async () => {
-//   // Clear users collection before each test
+//   // Clear all users before tests
 //   await User.deleteMany({});
 // });
 
-// describe('Auth Routes', () => {
-//   // Test user data
-//   const testUser = {
-//     name: 'Test User',
-//     email: 'test@example.com',
-//     password: 'password123'
-//   };
+// afterAll(async () => {
+//   if (server) {
+//     server.close();
+//   }
+//   await mongoose.disconnect();
+// });
 
-//   // Test registration
+// describe('Auth API Tests', () => {
 //   describe('POST /api/auth/register', () => {
-//     it('should register a new user and return token', async () => {
-//       const res = await request(app)
+//     it('should register a new user', async () => {
+//       const res = await request(server)
 //         .post('/api/auth/register')
-//         .send(testUser);
-      
-//       expect(res.statusCode).toBe(201);
-//       expect(res.body).toHaveProperty('success', true);
-//       expect(res.body).toHaveProperty('token');
-//       expect(res.headers['set-cookie']).toBeDefined();
+//         .send(testUser)
+//         .expect(201);
+
+//       expect(res.body.success).toBe(true);
+//       expect(res.body.token).toBeDefined();
+//       expect(res.body.user).toBeDefined();
+//       expect(res.body.user.name).toBe(testUser.name);
+//       expect(res.body.user.email).toBe(testUser.email);
+//       expect(res.body.user.password).toBeUndefined(); // Password should not be returned
 //     });
 
-//     it('should return error if email is already registered', async () => {
-//       // First create a user
-//       await User.create(testUser);
-      
-//       // Try to register with the same email
-//       const res = await request(app)
-//         .post('/api/auth/register')
-//         .send(testUser);
-      
-//       expect(res.statusCode).toBe(500); // Assuming your error handler returns 500
-//       // This expectation might need adjustment based on your error handling structure
-//     });
-
-//     it('should return error if required fields are missing', async () => {
-//       const res = await request(app)
+//     it('should not register a user with missing required fields', async () => {
+//       const res = await request(server)
 //         .post('/api/auth/register')
 //         .send({
-//           name: 'Missing Fields',
-//           // Missing email and password
-//         });
-      
-//       expect(res.statusCode).toBe(500); // Adjust based on your error handling
+//           name: 'Incomplete User'
+//         })
+//         .expect(400);
+
+//       expect(res.body.success).toBe(false);
+//       expect(res.body.error).toBeDefined();
+//     });
+
+//     it('should not register a user with an existing email', async () => {
+//       // Try to register with the same email
+//       const res = await request(server)
+//         .post('/api/auth/register')
+//         .send(testUser)
+//         .expect(400);
+
+//       expect(res.body.success).toBe(false);
+//       expect(res.body.error).toBe('User already exists');
 //     });
 //   });
 
-//   // Test login
 //   describe('POST /api/auth/login', () => {
-//     beforeEach(async () => {
-//       // Create a user for login tests
-//       await User.create(testUser);
-//     });
-
-//     it('should login user and return token', async () => {
-//       const res = await request(app)
+//     it('should login with valid credentials', async () => {
+//       const res = await request(server)
 //         .post('/api/auth/login')
 //         .send({
 //           email: testUser.email,
 //           password: testUser.password
-//         });
-      
-//       expect(res.statusCode).toBe(200);
-//       expect(res.body).toHaveProperty('success', true);
-//       expect(res.body).toHaveProperty('token');
-//       expect(res.headers['set-cookie']).toBeDefined();
+//         })
+//         .expect(200);
+
+//       expect(res.body.success).toBe(true);
+//       expect(res.body.token).toBeDefined();
+//       expect(res.body.user).toBeDefined();
+//       expect(res.body.user.name).toBe(testUser.name);
 //     });
 
-//     it('should return error if email is incorrect', async () => {
-//       const res = await request(app)
+//     it('should not login with invalid email', async () => {
+//       const res = await request(server)
 //         .post('/api/auth/login')
 //         .send({
-//           email: 'wrong@example.com',
+//           email: 'nonexistent@example.com',
 //           password: testUser.password
-//         });
-      
-//       expect(res.statusCode).toBe(500); // Adjust based on your error handling
+//         })
+//         .expect(401);
+
+//       expect(res.body.success).toBe(false);
+//       expect(res.body.error).toBe('Invalid credentials');
 //     });
 
-//     it('should return error if password is incorrect', async () => {
-//       const res = await request(app)
+//     it('should not login with invalid password', async () => {
+//       const res = await request(server)
 //         .post('/api/auth/login')
 //         .send({
 //           email: testUser.email,
 //           password: 'wrongpassword'
-//         });
-      
-//       expect(res.statusCode).toBe(500); // Adjust based on your error handling
-//     });
+//         })
+//         .expect(401);
 
-//     it('should return error if email and password are not provided', async () => {
-//       const res = await request(app)
-//         .post('/api/auth/login')
-//         .send({});
-      
-//       expect(res.statusCode).toBe(500); // Adjust based on your error handling
+//       expect(res.body.success).toBe(false);
+//       expect(res.body.error).toBe('Invalid credentials');
 //     });
 //   });
 
-//   // Test getMe (protected route)
 //   describe('GET /api/auth/me', () => {
 //     let token;
 
-//     beforeEach(async () => {
-//       // Create a user and get token for protected route tests
-//       const user = await User.create(testUser);
-//       token = user.getSignedJwtToken();
+//     beforeAll(async () => {
+//       // Login to get token
+//       const res = await request(server)
+//         .post('/api/auth/login')
+//         .send({
+//           email: testUser.email,
+//           password: testUser.password
+//         });
+
+//       token = res.body.token;
 //     });
 
-//     it('should get current user profile when authenticated', async () => {
-//       const res = await request(app)
+//     it('should get current user profile', async () => {
+//       const res = await request(server)
 //         .get('/api/auth/me')
-//         .set('Authorization', `Bearer ${token}`);
-      
-//       expect(res.statusCode).toBe(200);
-//       expect(res.body).toHaveProperty('success', true);
-//       expect(res.body.data).toHaveProperty('name', testUser.name);
-//       expect(res.body.data).toHaveProperty('email', testUser.email);
+//         .set('Authorization', `Bearer ${token}`)
+//         .expect(200);
+
+//       expect(res.body.success).toBe(true);
+//       expect(res.body.data).toBeDefined();
+//       expect(res.body.data.name).toBe(testUser.name);
+//       expect(res.body.data.email).toBe(testUser.email);
 //     });
 
-//     it('should return error if not authenticated', async () => {
-//       const res = await request(app)
-//         .get('/api/auth/me');
-      
-//       expect(res.statusCode).toBe(401); // Assuming your auth middleware returns 401 for unauthorized
-//     });
-
-//     it('should return error if token is invalid', async () => {
-//       const res = await request(app)
+//     it('should not access profile without token', async () => {
+//       const res = await request(server)
 //         .get('/api/auth/me')
-//         .set('Authorization', 'Bearer invalidtoken');
-      
-//       expect(res.statusCode).toBe(401); // Assuming your auth middleware returns 401 for unauthorized
+//         .expect(401);
+
+//       expect(res.body.success).toBe(false);
+//       expect(res.body.error).toBe('Not authorized to access this route');
+//     });
+
+//     it('should not access profile with invalid token', async () => {
+//       const res = await request(server)
+//         .get('/api/auth/me')
+//         .set('Authorization', 'Bearer invalidtoken')
+//         .expect(401);
+
+//       expect(res.body.success).toBe(false);
+//       expect(res.body.error).toBe('Not authorized to access this route');
 //     });
 //   });
 // });
