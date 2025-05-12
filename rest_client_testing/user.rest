@@ -3,17 +3,46 @@
 @contentType = application/json
 
 ### Register a new user
-POST {{baseUrl}}/users/register
+POST {{baseUrl}}/auth/register
 Content-Type: {{contentType}}
 
 {
-  "name": "Test User",
+  "name": "Teste User",
+  "email": "test2w083w322@example.com",
+  "password": "password123"
+}
+
+### Register another user (to test duplicate prevention)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Another Test User",
+  "email": "anothera@example.com",
+  "password": "password123"
+}
+
+### Try to register with duplicate email (should fail gracefully)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Duplicate Email User",
   "email": "test@example.com",
   "password": "password123"
 }
 
+####
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Duplicate Email User",
+  "email": "test@example.com",
+  "password": "password123"
+}
 ### Login with registered user
-POST {{baseUrl}}/users/login
+POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
@@ -21,14 +50,14 @@ Content-Type: {{contentType}}
   "password": "password123"
 }
 
-### Get current user (will return placeholder message until auth is implemented)
+### Get current user
 # First login to get a token, then copy the token here
 @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MWYxMTNiYzM4NmIyZTA0ZWI4MGI4ZSIsImlhdCI6MTc0Njg2NjU1NSwiZXhwIjoxNzQ5NDU4NTU1fQ.9YVGTi6rmsYqAtIiRBhwj55tlidnm0eqoR2xjqVxnJc
-GET {{baseUrl}}/users/me
+GET {{baseUrl}}/auth/me
 Authorization: Bearer {{authToken}}
 
 ### Register with invalid data (missing email)
-POST {{baseUrl}}/users/register
+POST {{baseUrl}}/auth/register
 Content-Type: {{contentType}}
 
 {
@@ -37,7 +66,7 @@ Content-Type: {{contentType}}
 }
 
 ### Register with invalid data (missing password)
-POST {{baseUrl}}/users/register
+POST {{baseUrl}}/auth/register
 Content-Type: {{contentType}}
 
 {
@@ -46,7 +75,7 @@ Content-Type: {{contentType}}
 }
 
 ### Login with invalid credentials
-POST {{baseUrl}}/users/login
+POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
@@ -55,10 +84,18 @@ Content-Type: {{contentType}}
 }
 
 ### Login with wrong password
-POST {{baseUrl}}/users/login
+POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
   "email": "test@example.com",
   "password": "wrongpassword"
+}
+
+### Login with missing credentials
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com"
 }
