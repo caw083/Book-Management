@@ -83,7 +83,7 @@ bookstore-api/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/bookstore-api.git
+   gh repo clone caw083/Book-Management
    cd bookstore-api
    ```
 
@@ -101,6 +101,14 @@ bookstore-api/
    ```
 
    Replace `<username>`, `<password>`, `<cluster>`, and `<database>` with your MongoDB Atlas credentials.
+
+   or using the configuration of
+   ```
+   PORT=3000
+   MONGO_URI=mongodb+srv://christopher083ade:TCjue30K0kDvEuYt@bookmanagement.76ttklh.mongodb.net/BookManagement?retryWrites=true&w=majority
+   JWT_SECRET=your_jwt_secret_here
+   JWT_EXPIRE=30d
+   ```
 
 4. Start the server:
    ```bash
