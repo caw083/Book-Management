@@ -62,11 +62,27 @@ exports.getMe = async (req, res, next) => {
 };
 
 const sendTokenResponse = (user, statusCode, res) => {
-    // Create token
-    const token = user.getSignedJwtToken();
-  
-    res.status(statusCode).json({
+  // Create token
+  const token = user.getSignedJwtToken();
+
+  // Set cookie options
+  const options = {
+    expires: new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
+    ),
+    httpOnly: true
+  };
+
+  // Use secure cookies in production
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+
+  res
+    .status(statusCode)
+    .cookie('token', token, options)
+    .json({
       success: true,
       token
     });
-  };
+};

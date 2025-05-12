@@ -8,7 +8,15 @@ Content-Type: {{contentType}}
 
 {
   "name": "Teste User",
-  "email": "test2w083w322@example.com",
+  "email": "test2w083w33122@example.com",
+  "password": "password123"
+}
+####
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "test2w083w33122@example.com",
   "password": "password123"
 }
 
@@ -52,7 +60,7 @@ Content-Type: {{contentType}}
 
 ### Get current user
 # First login to get a token, then copy the token here
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MWYxMTNiYzM4NmIyZTA0ZWI4MGI4ZSIsImlhdCI6MTc0Njg2NjU1NSwiZXhwIjoxNzQ5NDU4NTU1fQ.9YVGTi6rmsYqAtIiRBhwj55tlidnm0eqoR2xjqVxnJc
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjE0NGE3ZGI5MTcxZjdjM2E0ODlmYiIsImlhdCI6MTc0NzAxMDcyNywiZXhwIjoxNzQ5NjAyNzI3fQ.tsNZeBvgOzK3afLAeG1N49K8oVlCac2KLxDM91aFOh4
 GET {{baseUrl}}/auth/me
 Authorization: Bearer {{authToken}}
 

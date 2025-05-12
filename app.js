@@ -41,3 +41,5 @@ app.use((req, res, next) => {
 
 // Error handler middleware (should be last)
 app.use(errorHandler);
+
+module.exports = app;
