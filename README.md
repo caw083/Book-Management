@@ -84,7 +84,7 @@ bookstore-api/
 1. Clone the repository:
    ```bash
    git clone -b Linux-Fix https://github.com/caw083/Book-Management.git
-   cd bookstore-api
+   cd Book-Management
    ```
 
 2. Install dependencies:
