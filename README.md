@@ -83,7 +83,7 @@ bookstore-api/
 
 1. Clone the repository:
    ```bash
-   gh repo clone caw083/Book-Management
+   git clone -b Linux-Fix https://github.com/caw083/Book-Management.git
    cd bookstore-api
    ```
 
