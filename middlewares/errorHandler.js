@@ -15,18 +15,31 @@ const errorHandler = (err, req, res, next) => {
   // Log to console for dev
   console.error(err);
 
-  // Mongoose bad ObjectId
-  if (err.name === 'CastError') {
-    const message = `Resource not found with id of ${err.value}`;
-    error = new ErrorResponse(message, 404);
+  // Handle specific error messages for auth process
+  if (err.message === 'Invalid credentials') {
+    error = new ErrorResponse('Invalid credentials', 401);
   }
 
-  // Mongoose duplicate key
-  if (err.code === 11000) {
+  if (err.message === 'Not authorized to access this route') {
+    error = new ErrorResponse('Not authorized to access this route', 401);
+  }
+
+  // Handle user already exists error specifically for our test case
+  if (err.code === 11000 && err.keyPattern && err.keyPattern.email) {
+    error = new ErrorResponse('User already exists', 400);
+  }
+  // General duplicate key error
+  else if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
     const value = err.keyValue[field];
     const message = `Duplicate field value entered: ${field} with value: ${value}. Please use another value.`;
     error = new ErrorResponse(message, 400);
+  }
+
+  // Mongoose bad ObjectId
+  if (err.name === 'CastError') {
+    const message = `Resource not found with id of ${err.value}`;
+    error = new ErrorResponse(message, 404);
   }
 
   // Mongoose validation error
