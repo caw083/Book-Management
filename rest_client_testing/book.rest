@@ -9,7 +9,7 @@ Content-Type: application/json
   "title": "Harry Potter and the Philosopher's Stone",
   "description": "The first book in the Harry Potter series",
   "isbn": "9780747532743",
-  "author": "681ebea9adbc9ccc65f958be",
+  "author": "68212b271869c50deae9087f",
   "publishedDate": "1997-06-26"
 }
 
@@ -43,4 +43,4 @@ Content-Type: application/json
 
 #####
 
-DELETE http://localhost:3000/api/books/681ee4e267068d8d5ca319ce
+DELETE http://localhost:3000/api/books/682126a31869c50deae90854
