@@ -20,6 +20,7 @@ A RESTful API for managing books and authors using Node.js, Express, MongoDB Atl
   - [Authentication Endpoints](#authentication-endpoints)
 - [Query Parameters](#query-parameters)
 - [Testing](#testing)
+- [API Request Examples](#api-request-examples)
 - [Error Handling](#error-handling)
 - [Contributing](#contributing)
 - [License](#license)
@@ -102,7 +103,7 @@ bookstore-api/
 
    Replace `<username>`, `<password>`, `<cluster>`, and `<database>` with your MongoDB Atlas credentials.
 
-   or using the configuration of
+   Alternatively, you can use this sample configuration:
    ```
    PORT=3000
    MONGO_URI=mongodb+srv://christopher083ade:TCjue30K0kDvEuYt@bookmanagement.76ttklh.mongodb.net/BookManagement?retryWrites=true&w=majority
@@ -253,12 +254,12 @@ To test the API endpoints, you can use tools like:
 - cURL
 - VS Code's REST Client extension with a .rest file
 
-## API Request Examples (REST Client)
-You can test this API using [VS Code's REST Client Extension](https://marketplace.visualstudio.com/items?itemName=humao.rest-client). Save the following into a file named bookstore.http or bookstore.rest:
+## API Request Examples
 
-<details> <summary>Click to expand sample REST requests</summary>
+You can test this API using [VS Code's REST Client Extension](https://marketplace.visualstudio.com/items?itemName=humao.rest-client). Save the following into a file named `bookstore.http` or `bookstore.rest`:
+
 ```http
-  @baseUrl = http://ec2-107-21-140-191.compute-1.amazonaws.com:3000/api
+@baseUrl = http://ec2-107-21-140-191.compute-1.amazonaws.com:3000/api
 
 ### REGISTER USER
 POST {{baseUrl}}/auth/register
@@ -309,13 +310,12 @@ Authorization: Bearer {{jwt_token}}
 GET {{baseUrl}}/books?page=1&limit=20
 
 ### GET BOOKS PAGE 2
-GET {{baseUrl}}/books?page=2&limit=20```
+GET {{baseUrl}}/books?page=2&limit=20
+```
 
- 
-📝Replace {{jwt_token}} with the token returned from the login request when accessing protected endpoints like author or book creation.
-
-Or just using the book-api.rest in the folder real_life_test_data
-</details>
+> **Note:** Replace `{{jwt_token}}` with the token returned from the login request when accessing protected endpoints like author or book creation.
+>
+> Alternatively, you can use the `book-api.rest` file in the `real_life_test_data` folder.
 
 ## Error Handling
 
