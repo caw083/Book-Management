@@ -6,6 +6,20 @@ sudo dnf update -y
 # Install Node.js, npm, Git and GitHub CLI
 # Note: Correct package name is 'nodejs' (one word), 'npm' comes with it
 sudo dnf install -y nodejs git gh
+#  Install dnf plugin to manage repositories
+sudo dnf install -y dnf-plugins-core
+
+#  Add the Docker CE official repository
+sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+
+#  Install Docker Engine, CLI, containerd, and Docker Compose plugin
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+#  Start the Docker service
+sudo systemctl start docker
+
+#  Enable Docker to start on boot
+sudo systemctl enable docker
 
 # Authenticate with GitHub
 gh auth login
