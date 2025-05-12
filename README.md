@@ -257,7 +257,7 @@ To test the API endpoints, you can use tools like:
 You can test this API using [VS Code's REST Client Extension](https://marketplace.visualstudio.com/items?itemName=humao.rest-client). Save the following into a file named bookstore.http or bookstore.rest:
 
 <details> <summary>Click to expand sample REST requests</summary>
-```@baseUrl = http://ec2-107-21-140-191.compute-1.amazonaws.com:3000/api
+`@baseUrl = http://ec2-107-21-140-191.compute-1.amazonaws.com:3000/api
 
 ### REGISTER USER
 POST {{baseUrl}}/auth/register
@@ -308,7 +308,7 @@ Authorization: Bearer {{jwt_token}}
 GET {{baseUrl}}/books?page=1&limit=20
 
 ### GET BOOKS PAGE 2
-GET {{baseUrl}}/books?page=2&limit=20```
+GET {{baseUrl}}/books?page=2&limit=20`
 
  
 📝Replace {{jwt_token}} with the token returned from the login request when accessing protected endpoints like author or book creation.
